@@ -94,17 +94,7 @@ function PokemonMoves({ moves }: PokemonMovesProps) {
   const [order, setOrder] = useState<MoveOrder>("name");
   const [visibleCount, setVisibleCount] = useState(MOVES_PER_PAGE);
 
-  const availableGenerations = useMemo(() => {
-    const generations = new Set<string>();
-
-    moves.forEach((move) => {
-      move.learnDetails.forEach((detail) => {
-        generations.add(detail.generation);
-      });
-    });
-
-    return Array.from(generations).sort();
-  }, [moves]);
+  
 
   const filteredMoves = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();

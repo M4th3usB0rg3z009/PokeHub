@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router";
 
 import Home from "./pages/home/Home";
 import Team from "./pages/Team/team";
