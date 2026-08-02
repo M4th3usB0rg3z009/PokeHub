@@ -231,7 +231,7 @@ npm run dev
 Desenvolvido por **Matheus Borges**
 
 LinkedIn:
-*(adicione seu LinkedIn)*
+www.linkedin.com/in/matheus-borges009
 
 GitHub:
 https://github.com/M4th3usB0rg3z009
