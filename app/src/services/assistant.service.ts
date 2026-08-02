@@ -9,19 +9,33 @@ interface AssistantResponse {
   answer: string;
 }
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
+if (!apiUrl) {
+  throw new Error(
+    "A variável VITE_API_URL não foi configurada.",
+  );
+}
+
 const api = axios.create({
-  baseURL: "http://localhost:3000/api",
-  timeout: 60000
+  baseURL: apiUrl,
+  timeout: 60000,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 export async function askPokemonAssistant({
   pokemonName,
-  question
+  question,
 }: AskAssistantInput): Promise<string> {
-  const response = await api.post<AssistantResponse>("/assistant", {
-    pokemonName,
-    question
-  });
+  const response = await api.post<AssistantResponse>(
+    "/assistant",
+    {
+      pokemonName,
+      question,
+    },
+  );
 
   return response.data.answer;
 }
