@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router";
 
-import Home from "./pages/home/Home";
+import Home from "./pages/Home/Home";
 import Team from "./pages/Team/team";
 import NotFound from "./pages/NotFound/NotFound";
 
