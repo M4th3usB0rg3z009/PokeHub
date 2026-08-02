@@ -479,9 +479,9 @@ export async function getPokemonByNameOrId(
   const pokemon = response.data;
 
   const speciesResponse =
-    await pokeApi.get<PokemonSpeciesResponse>(
-      `/pokemon-species/${pokemon.id}`,
-    );
+  await pokeApi.get<PokemonSpeciesResponse>(
+    `/pokemon-species/${pokemon.species.name}`,
+  );
 
   const species = speciesResponse.data;
 
