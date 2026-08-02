@@ -223,10 +223,7 @@ npm run dev
 - ✅ Gerador de Builds
 - ✅ Team Builder
 - ✅ Análise de equipes
-- ⏳ Deploy
-- ⏳ Compartilhamento de builds
-- ⏳ Comparador de Pokémon
-
+  
 ---
 
 # 👨‍💻 Autor
