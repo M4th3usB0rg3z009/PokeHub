@@ -1,6 +1,10 @@
 import axios from "axios";
-import { useState } from "react";
-import type { FormEvent } from "react";
+import {
+  type FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { askPokemonAssistant } from "../../services/assistant.service";
 
@@ -16,20 +20,32 @@ interface ChatMessage {
   content: string;
 }
 
-const suggestions = [
-  "Qual é a melhor nature?",
-  "Recomende uma build competitiva.",
-  "Quais são seus melhores golpes?"
-];
-
 function AIChat({ pokemonName }: AIChatProps) {
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function sendQuestion(value: string) {
-    const normalizedQuestion = value.trim();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setQuestion("");
+    setMessages([]);
+    setError("");
+  }, [pokemonName]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages, loading]);
+
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    const normalizedQuestion = question.trim();
 
     if (!normalizedQuestion || loading) {
       return;
@@ -38,115 +54,101 @@ function AIChat({ pokemonName }: AIChatProps) {
     const userMessage: ChatMessage = {
       id: Date.now(),
       role: "user",
-      content: normalizedQuestion
+      content: normalizedQuestion,
     };
 
-    try {
-      setLoading(true);
-      setError("");
-      setQuestion("");
-      setMessages((current) => [...current, userMessage]);
+    setMessages((currentMessages) => [
+      ...currentMessages,
+      userMessage,
+    ]);
 
+    setQuestion("");
+    setError("");
+    setLoading(true);
+
+    try {
       const answer = await askPokemonAssistant({
         pokemonName,
-        question: normalizedQuestion
+        question: normalizedQuestion,
       });
 
       const assistantMessage: ChatMessage = {
         id: Date.now() + 1,
         role: "assistant",
-        content: answer
+        content: answer,
       };
 
-      setMessages((current) => [...current, assistantMessage]);
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        assistantMessage,
+      ]);
     } catch (requestError) {
       if (axios.isAxiosError(requestError)) {
-        const message = requestError.response?.data?.message;
+        const message =
+          requestError.response?.data?.message;
 
         setError(
           typeof message === "string"
             ? message
-            : "Não foi possível consultar a IA."
+            : "Não foi possível consultar o assistente.",
         );
 
         return;
       }
 
-      setError("Não foi possível consultar a IA.");
+      setError(
+        "Não foi possível consultar o assistente.",
+      );
     } finally {
       setLoading(false);
     }
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    void sendQuestion(question);
-  }
+  const suggestedQuestions = [
+    "Quais são os melhores golpes?",
+    "Como usar este Pokémon?",
+    "Quais são seus principais counters?",
+  ];
 
-  function handleSuggestionClick(suggestion: string) {
-    void sendQuestion(suggestion);
+  function handleSuggestedQuestion(
+    suggestedQuestion: string,
+  ) {
+    setQuestion(suggestedQuestion);
   }
 
   return (
-    <aside className="ai-chat">
+    <section className="ai-chat">
       <div className="ai-chat__header">
-        <div className="ai-chat__icon">IA</div>
+        <div className="ai-chat__avatar">
+          <span>IA</span>
+        </div>
 
         <div>
-          <span>Assistente inteligente</span>
-          <h2>Professor PokéHub</h2>
+          <span>Professor PokéHub</span>
+          <h2>Assistente inteligente</h2>
         </div>
+
+        <span className="ai-chat__status">
+          Online
+        </span>
       </div>
 
-      <div className="ai-chat__conversation">
-        <div className="ai-chat__message ai-chat__message--assistant">
-          <span className="ai-chat__avatar">IA</span>
-
-          <div>
-            <p>
-              Posso responder dúvidas sobre{" "}
-              <strong>{pokemonName}</strong>, recomendar builds, natures,
-              itens, golpes e estratégias.
-            </p>
-          </div>
-        </div>
-
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`ai-chat__message ai-chat__message--${message.role}`}
-          >
-            <span className="ai-chat__avatar">
-              {message.role === "assistant" ? "IA" : "Você"}
-            </span>
-
-            <div>
-              <p>{message.content}</p>
-            </div>
-          </div>
-        ))}
-
-        {loading && (
-          <div className="ai-chat__message ai-chat__message--assistant">
-            <span className="ai-chat__avatar">IA</span>
-
-            <div>
-              <p className="ai-chat__loading">
-                Analisando {pokemonName}...
-              </p>
-            </div>
-          </div>
-        )}
+      <div className="ai-chat__intro">
+        <p>
+          Pergunte qualquer coisa sobre{" "}
+          <strong>{pokemonName}</strong>.
+        </p>
       </div>
 
       {messages.length === 0 && (
         <div className="ai-chat__suggestions">
-          {suggestions.map((suggestion) => (
+          {suggestedQuestions.map((suggestion) => (
             <button
               key={suggestion}
               type="button"
-              disabled={loading}
-              onClick={() => handleSuggestionClick(suggestion)}
+              onClick={() =>
+                handleSuggestedQuestion(suggestion)
+              }
             >
               {suggestion}
             </button>
@@ -154,34 +156,61 @@ function AIChat({ pokemonName }: AIChatProps) {
         </div>
       )}
 
+      <div className="ai-chat__messages">
+        {messages.map((message) => (
+          <article
+            key={message.id}
+            className={`ai-chat__message ai-chat__message--${message.role}`}
+          >
+            <span>
+              {message.role === "user"
+                ? "Você"
+                : "Professor PokéHub"}
+            </span>
+
+            <p>{message.content}</p>
+          </article>
+        ))}
+
+        {loading && (
+          <div className="ai-chat__typing">
+            <span />
+            <span />
+            <span />
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
       {error && (
         <p className="ai-chat__error" role="alert">
           {error}
         </p>
       )}
 
-      <form className="ai-chat__form" onSubmit={handleSubmit}>
+      <form
+        className="ai-chat__form"
+        onSubmit={handleSubmit}
+      >
         <textarea
           value={question}
-          disabled={loading}
-          onChange={(event) => setQuestion(event.target.value)}
+          onChange={(event) =>
+            setQuestion(event.target.value)
+          }
           placeholder={`Pergunte algo sobre ${pokemonName}...`}
-          rows={4}
-          maxLength={500}
+          rows={3}
+          disabled={loading}
         />
 
-        <div className="ai-chat__form-footer">
-          <span>{question.length}/500</span>
-
-          <button
-            type="submit"
-            disabled={loading || !question.trim()}
-          >
-            {loading ? "Respondendo..." : "Enviar pergunta"}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={loading || !question.trim()}
+        >
+          {loading ? "Pensando..." : "Enviar"}
+        </button>
       </form>
-    </aside>
+    </section>
   );
 }
 

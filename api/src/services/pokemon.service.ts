@@ -1,4 +1,6 @@
 import axios from "axios";
+
+import { cache } from "./cache.service.js";
 import { translatePokemonData } from "./translation.service.js";
 
 const pokeApi = axios.create({
@@ -6,10 +8,58 @@ const pokeApi = axios.create({
   timeout: 10000,
 });
 
+const POKEMON_CACHE_DURATION = 1000 * 60 * 60;
+
+const versionGroupGenerationCache =
+  new Map<string, Promise<string>>();
+
+interface PokemonMoveVersionDetail {
+  level_learned_at: number;
+
+  move_learn_method: {
+    name: string;
+    url: string;
+  };
+
+  version_group: {
+    name: string;
+    url: string;
+  };
+}
+
+interface PokemonMoveEntry {
+  move: {
+    name: string;
+    url: string;
+  };
+
+  version_group_details: PokemonMoveVersionDetail[];
+}
+
+interface VersionGroupResponse {
+  name: string;
+
+  generation: {
+    name: string;
+    url: string;
+  };
+}
+
 interface TypeDamageRelations {
-  double_damage_from: Array<{ name: string; url: string }>;
-  half_damage_from: Array<{ name: string; url: string }>;
-  no_damage_from: Array<{ name: string; url: string }>;
+  double_damage_from: Array<{
+    name: string;
+    url: string;
+  }>;
+
+  half_damage_from: Array<{
+    name: string;
+    url: string;
+  }>;
+
+  no_damage_from: Array<{
+    name: string;
+    url: string;
+  }>;
 }
 
 interface TypeResponse {
@@ -27,6 +77,7 @@ interface PokemonSpeciesResponse {
 
   genera: Array<{
     genus: string;
+
     language: {
       name: string;
     };
@@ -34,6 +85,7 @@ interface PokemonSpeciesResponse {
 
   flavor_text_entries: Array<{
     flavor_text: string;
+
     language: {
       name: string;
     };
@@ -59,21 +111,102 @@ interface PokemonEvolution {
   image: string;
 }
 
-function countTypeRelations(types: TypeResponse[]) {
+interface MoveResponse {
+  name: string;
+  power: number | null;
+  accuracy: number | null;
+
+  type: {
+    name: string;
+  };
+
+  damage_class: {
+    name: "physical" | "special" | "status";
+  };
+}
+
+interface PokemonMoveLearnDetail {
+  method: string;
+  level: number;
+  versionGroup: string;
+  generation: string;
+}
+
+interface PokemonMove {
+  name: string;
+  type: string;
+  power: number | null;
+  accuracy: number | null;
+
+  damageClass:
+    | "physical"
+    | "special"
+    | "status";
+
+  learnDetails: PokemonMoveLearnDetail[];
+}
+
+export interface PokemonData {
+  id: number;
+  name: string;
+  height: number;
+  weight: number;
+
+  description: string;
+  category: string;
+  generation: string;
+
+  image: string;
+
+  types: string[];
+  abilities: string[];
+  moves: PokemonMove[];
+
+  stats: Array<{
+    name: string;
+    value: number;
+  }>;
+
+  weaknesses: Array<{
+    name: string;
+    multiplier: number;
+  }>;
+
+  resistances: Array<{
+    name: string;
+    multiplier: number;
+  }>;
+
+  immunities: string[];
+  evolutions: PokemonEvolution[];
+}
+
+function countTypeRelations(
+  types: TypeResponse[],
+) {
   const multipliers: Record<string, number> = {};
 
   for (const type of types) {
-    for (const relation of type.damage_relations.double_damage_from) {
+    for (
+      const relation of type.damage_relations
+        .double_damage_from
+    ) {
       multipliers[relation.name] =
         (multipliers[relation.name] ?? 1) * 2;
     }
 
-    for (const relation of type.damage_relations.half_damage_from) {
+    for (
+      const relation of type.damage_relations
+        .half_damage_from
+    ) {
       multipliers[relation.name] =
         (multipliers[relation.name] ?? 1) * 0.5;
     }
 
-    for (const relation of type.damage_relations.no_damage_from) {
+    for (
+      const relation of type.damage_relations
+        .no_damage_from
+    ) {
       multipliers[relation.name] = 0;
     }
   }
@@ -97,7 +230,9 @@ function countTypeRelations(types: TypeResponse[]) {
       })),
 
     immunities: Object.entries(multipliers)
-      .filter(([, multiplier]) => multiplier === 0)
+      .filter(
+        ([, multiplier]) => multiplier === 0,
+      )
       .map(([name]) => name),
   };
 }
@@ -117,7 +252,10 @@ function extractIdFromUrl(url: string): number {
 
 function flattenEvolutionChain(
   node: EvolutionChainNode,
-): Array<{ id: number; name: string }> {
+): Array<{
+  id: number;
+  name: string;
+}> {
   const currentPokemon = {
     id: extractIdFromUrl(node.species.url),
     name: node.species.name,
@@ -125,8 +263,10 @@ function flattenEvolutionChain(
 
   return [
     currentPokemon,
-    ...node.evolves_to.flatMap((nextEvolution) =>
-      flattenEvolutionChain(nextEvolution),
+
+    ...node.evolves_to.flatMap(
+      (nextEvolution) =>
+        flattenEvolutionChain(nextEvolution),
     ),
   ];
 }
@@ -145,18 +285,21 @@ async function getEvolutionChain(
 
   return Promise.all(
     evolutions.map(async (evolution) => {
-      const pokemonResponse = await pokeApi.get(
-        `/pokemon/${evolution.id}`,
-      );
+      const pokemonResponse =
+        await pokeApi.get(
+          `/pokemon/${evolution.id}`,
+        );
 
       return {
         id: evolution.id,
         name: evolution.name,
+
         image:
           pokemonResponse.data.sprites.other[
             "official-artwork"
           ].front_default ??
-          pokemonResponse.data.sprites.front_default,
+          pokemonResponse.data.sprites
+            .front_default,
       };
     }),
   );
@@ -169,12 +312,17 @@ function findTranslatedEntry<
     };
   },
 >(entries: T[]): T | undefined {
-  const preferredLanguages = ["pt-br", "pt", "en"];
+  const preferredLanguages = [
+    "pt-br",
+    "pt",
+    "en",
+  ];
 
   for (const language of preferredLanguages) {
     const entry = entries.find(
       (item) =>
-        item.language.name.toLowerCase() === language,
+        item.language.name.toLowerCase() ===
+        language,
     );
 
     if (entry) {
@@ -185,12 +333,144 @@ function findTranslatedEntry<
   return entries[0];
 }
 
+async function getVersionGroupGeneration(
+  versionGroupName: string,
+): Promise<string> {
+  const cachedRequest =
+    versionGroupGenerationCache.get(
+      versionGroupName,
+    );
+
+  if (cachedRequest) {
+    return cachedRequest;
+  }
+
+  const generationRequest = pokeApi
+    .get<VersionGroupResponse>(
+      `/version-group/${versionGroupName}`,
+    )
+    .then(
+      (response) =>
+        response.data.generation.name,
+    )
+    .catch((error) => {
+      versionGroupGenerationCache.delete(
+        versionGroupName,
+      );
+
+      throw error;
+    });
+
+  versionGroupGenerationCache.set(
+    versionGroupName,
+    generationRequest,
+  );
+
+  return generationRequest;
+}
+
+function removeDuplicateLearnDetails(
+  learnDetails: PokemonMoveLearnDetail[],
+): PokemonMoveLearnDetail[] {
+  return Array.from(
+    new Map(
+      learnDetails.map((detail) => [
+        [
+          detail.method,
+          detail.level,
+          detail.versionGroup,
+          detail.generation,
+        ].join("|"),
+
+        detail,
+      ]),
+    ).values(),
+  );
+}
+
+async function getMoveDetails(
+  pokemonMoves: PokemonMoveEntry[],
+): Promise<PokemonMove[]> {
+  return Promise.all(
+    pokemonMoves.map(
+      async ({
+        move,
+        version_group_details,
+      }) => {
+        const response =
+          await axios.get<MoveResponse>(
+            move.url,
+          );
+
+        const moveData = response.data;
+
+        const rawLearnDetails =
+          await Promise.all(
+            version_group_details.map(
+              async (detail) => {
+                const generation =
+                  await getVersionGroupGeneration(
+                    detail.version_group.name,
+                  );
+
+                return {
+                  method:
+                    detail.move_learn_method
+                      .name,
+
+                  level:
+                    detail.level_learned_at,
+
+                  versionGroup:
+                    detail.version_group.name,
+
+                  generation,
+                };
+              },
+            ),
+          );
+
+        const learnDetails =
+          removeDuplicateLearnDetails(
+            rawLearnDetails,
+          );
+
+        return {
+          name: moveData.name,
+          type: moveData.type.name,
+          power: moveData.power,
+          accuracy: moveData.accuracy,
+
+          damageClass:
+            moveData.damage_class.name,
+
+          learnDetails,
+        };
+      },
+    ),
+  );
+}
+
 export async function getPokemonByNameOrId(
   nameOrId: string,
-) {
+): Promise<PokemonData> {
   const normalizedValue = nameOrId
     .trim()
     .toLowerCase();
+
+  const cacheKey =
+    `pokemon:${normalizedValue}`;
+
+  const cachedPokemon =
+    cache.get<PokemonData>(cacheKey);
+
+  if (cachedPokemon) {
+    console.log(
+      `Pokémon carregado do cache: ${normalizedValue}`,
+    );
+
+    return cachedPokemon;
+  }
 
   const response = await pokeApi.get(
     `/pokemon/${normalizedValue}`,
@@ -206,60 +486,70 @@ export async function getPokemonByNameOrId(
   const species = speciesResponse.data;
 
   const typeNames = pokemon.types.map(
-    (item: { type: { name: string } }) =>
-      item.type.name,
+    (item: {
+      type: {
+        name: string;
+      };
+    }) => item.type.name,
   );
 
   const typeResponses = await Promise.all(
-    typeNames.map(async (typeName: string) => {
-      const typeResponse =
-        await pokeApi.get<TypeResponse>(
-          `/type/${typeName}`,
-        );
+    typeNames.map(
+      async (typeName: string) => {
+        const typeResponse =
+          await pokeApi.get<TypeResponse>(
+            `/type/${typeName}`,
+          );
 
-      return typeResponse.data;
-    }),
+        return typeResponse.data;
+      },
+    ),
   );
 
   const typeRelations =
     countTypeRelations(typeResponses);
 
-  const evolutions = await getEvolutionChain(
-    species.evolution_chain.url,
-  );
+  const evolutions =
+    await getEvolutionChain(
+      species.evolution_chain.url,
+    );
 
-  const descriptionEntry = findTranslatedEntry(
-    species.flavor_text_entries,
-  );
+  const descriptionEntry =
+    findTranslatedEntry(
+      species.flavor_text_entries,
+    );
 
-  const categoryEntry = findTranslatedEntry(
-    species.genera,
-  );
+  const categoryEntry =
+    findTranslatedEntry(species.genera);
 
   const description =
     descriptionEntry?.flavor_text
       .replace(/\f/g, " ")
       .replace(/\n/g, " ")
       .replace(/\s+/g, " ")
-      .trim() ?? "Descrição não disponível.";
+      .trim() ??
+    "Descrição não disponível.";
 
   const category =
     categoryEntry?.genus ??
     "Categoria não disponível.";
 
-  const generation = species.generation.name;
+  const generation =
+    species.generation.name;
 
-  const originalAbilities = pokemon.abilities.map(
-    (item: {
-      ability: {
-        name: string;
-      };
-    }) => item.ability.name,
-  );
+  const originalAbilities =
+    pokemon.abilities.map(
+      (item: {
+        ability: {
+          name: string;
+        };
+      }) => item.ability.name,
+    );
 
   let translatedDescription = description;
   let translatedCategory = category;
-  let translatedAbilities = originalAbilities;
+  let translatedAbilities =
+    originalAbilities;
 
   try {
     const translatedData =
@@ -284,52 +574,80 @@ export async function getPokemonByNameOrId(
     );
   }
 
-  const moves = pokemon.moves
-  .slice(0, 30)
-  .map(
-    (item: {
-      move: {
-        name: string;
-      };
-    }) => ({
-      name: item.move.name,
-    }),
+  const moves = await getMoveDetails(
+    pokemon.moves as PokemonMoveEntry[],
   );
 
-return {
-  id: pokemon.id,
-  name: pokemon.name,
-  height: pokemon.height,
-  weight: pokemon.weight,
+  const pokemonData: PokemonData = {
+    id: pokemon.id,
+    name: pokemon.name,
+    height: pokemon.height,
+    weight: pokemon.weight,
 
-  description: translatedDescription,
-  category: translatedCategory,
-  generation,
+    description:
+      translatedDescription,
 
-  image:
-    pokemon.sprites.other["official-artwork"]
-      .front_default ??
-    pokemon.sprites.front_default,
+    category:
+      translatedCategory,
 
-  types: typeNames,
-  abilities: translatedAbilities,
-  moves,
+    generation,
 
-  stats: pokemon.stats.map(
-    (item: {
-      base_stat: number;
-      stat: {
-        name: string;
-      };
-    }) => ({
-      name: item.stat.name,
-      value: item.base_stat,
-    }),
-  ),
+    image:
+      pokemon.sprites.other[
+        "official-artwork"
+      ].front_default ??
+      pokemon.sprites.front_default,
 
-  weaknesses: typeRelations.weaknesses,
-  resistances: typeRelations.resistances,
-  immunities: typeRelations.immunities,
-  evolutions,
-};
+    types: typeNames,
+    abilities: translatedAbilities,
+    moves,
+
+    stats: pokemon.stats.map(
+      (item: {
+        base_stat: number;
+
+        stat: {
+          name: string;
+        };
+      }) => ({
+        name: item.stat.name,
+        value: item.base_stat,
+      }),
+    ),
+
+    weaknesses:
+      typeRelations.weaknesses,
+
+    resistances:
+      typeRelations.resistances,
+
+    immunities:
+      typeRelations.immunities,
+
+    evolutions,
+  };
+
+  cache.set(
+    cacheKey,
+    pokemonData,
+    POKEMON_CACHE_DURATION,
+  );
+
+  cache.set(
+    `pokemon:${pokemon.id}`,
+    pokemonData,
+    POKEMON_CACHE_DURATION,
+  );
+
+  cache.set(
+    `pokemon:${pokemon.name.toLowerCase()}`,
+    pokemonData,
+    POKEMON_CACHE_DURATION,
+  );
+
+  console.log(
+    `Pokémon salvo no cache: ${pokemon.name}`,
+  );
+
+  return pokemonData;
 }
