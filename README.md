@@ -8,9 +8,7 @@ O PokéHub integra a **PokéAPI** com o **Google Gemini**, oferecendo uma experi
 
 ## 📸 Preview
 
-> *(adicione aqui um GIF ou uma imagem da aplicação)*
-
-![PokéHub](./assets/pokehub-preview.png)
+<img src="app/public/TelaInicialPokéHub.png>
 
 ---
 
