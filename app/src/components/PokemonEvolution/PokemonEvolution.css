@@ -1,0 +1,145 @@
+.pokemon-evolution {
+  width: 100%;
+  padding: 32px;
+
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.05);
+}
+
+.pokemon-evolution__header span {
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pokemon-evolution__header h2 {
+  margin-top: 5px;
+
+  color: #18181b;
+  font-size: 28px;
+}
+
+.pokemon-evolution__list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+
+  width: 100%;
+  margin-top: 28px;
+
+  overflow-x: auto;
+  padding: 10px 4px 18px;
+}
+
+.pokemon-evolution__step {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+
+  flex-shrink: 0;
+}
+
+.pokemon-evolution__card {
+  position: relative;
+
+  width: 210px;
+  min-width: 210px;
+  min-height: 250px;
+  padding: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  color: inherit;
+  text-align: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(220, 38, 38, 0.09),
+      transparent 60%
+    ),
+    #fafafa;
+
+  border: 1px solid #ececec;
+  border-radius: 18px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.pokemon-evolution__card:hover {
+  transform: translateY(-4px);
+  border-color: #fecaca;
+
+  box-shadow: 0 12px 28px rgba(220, 38, 38, 0.1);
+}
+
+.pokemon-evolution__card:focus-visible {
+  outline: 3px solid rgba(220, 38, 38, 0.25);
+  outline-offset: 3px;
+}
+
+.pokemon-evolution__number {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pokemon-evolution__card img {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+
+  object-fit: contain;
+}
+
+.pokemon-evolution__card h3 {
+  margin-top: 10px;
+
+  color: #27272a;
+  font-size: 18px;
+  text-transform: capitalize;
+}
+
+.pokemon-evolution__card small {
+  display: block;
+  margin-top: 6px;
+
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pokemon-evolution__arrow {
+  flex-shrink: 0;
+
+  color: #dc2626;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .pokemon-evolution {
+    padding: 24px;
+  }
+
+  .pokemon-evolution__list {
+    justify-content: flex-start;
+  }
+}

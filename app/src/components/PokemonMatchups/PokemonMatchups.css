@@ -1,0 +1,93 @@
+.pokemon-matchups {
+  width: 100%;
+  padding: 32px;
+
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.05);
+}
+
+.pokemon-matchups__header span {
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pokemon-matchups__header h2 {
+  margin-top: 5px;
+  color: #18181b;
+  font-size: 28px;
+}
+
+.pokemon-matchups__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+
+  margin-top: 28px;
+}
+
+.pokemon-matchups__group {
+  padding: 20px;
+
+  background-color: #fafafa;
+  border: 1px solid #ececec;
+  border-radius: 16px;
+}
+
+.pokemon-matchups__group h3 {
+  margin-bottom: 14px;
+
+  color: #27272a;
+  font-size: 16px;
+}
+
+.pokemon-matchups__types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.pokemon-matchups__types p {
+  color: #71717a;
+  font-size: 14px;
+}
+
+.matchup {
+  padding: 8px 12px;
+
+  color: #ffffff;
+  background-color: #71717a;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.matchup--weak {
+  box-shadow: inset 0 0 0 2px rgba(127, 29, 29, 0.22);
+}
+
+.matchup--resistant {
+  box-shadow: inset 0 0 0 2px rgba(20, 83, 45, 0.22);
+}
+
+.matchup--immune {
+  box-shadow: inset 0 0 0 2px rgba(24, 24, 27, 0.25);
+}
+
+@media (max-width: 900px) {
+  .pokemon-matchups__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .pokemon-matchups {
+    padding: 24px;
+  }
+}
