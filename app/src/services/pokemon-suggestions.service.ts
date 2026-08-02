@@ -1,17 +1,18 @@
 import axios from "axios";
 
-interface PokemonSpeciesItem {
+interface PokemonListItem {
   name: string;
   url: string;
 }
 
-interface PokemonSpeciesResponse {
-  results: PokemonSpeciesItem[];
+interface PokemonListResponse {
+  count: number;
+  results: PokemonListItem[];
 }
 
 const pokeApi = axios.create({
   baseURL: "https://pokeapi.co/api/v2",
-  timeout: 10000,
+  timeout: 30000,
 });
 
 let cachedPokemonNames: string[] | null = null;
@@ -21,14 +22,37 @@ async function loadPokemonNames(): Promise<string[]> {
     return cachedPokemonNames;
   }
 
-  const response =
-    await pokeApi.get<PokemonSpeciesResponse>(
-      "/pokemon-species?limit=2000",
+  const countResponse =
+    await pokeApi.get<PokemonListResponse>(
+      "/pokemon",
+      {
+        params: {
+          limit: 1,
+          offset: 0,
+        },
+      },
     );
 
-  cachedPokemonNames = response.data.results.map(
-    (pokemon) => pokemon.name,
-  );
+  const totalPokemon =
+    countResponse.data.count;
+
+  const response =
+    await pokeApi.get<PokemonListResponse>(
+      "/pokemon",
+      {
+        params: {
+          limit: totalPokemon,
+          offset: 0,
+        },
+      },
+    );
+
+  cachedPokemonNames =
+    response.data.results
+      .map((pokemon) => pokemon.name)
+      .sort((firstName, secondName) =>
+        firstName.localeCompare(secondName),
+      );
 
   return cachedPokemonNames;
 }
@@ -38,23 +62,27 @@ export async function getPokemonSuggestions(
 ): Promise<string[]> {
   const normalizedSearch = search
     .trim()
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/\s+/g, "-");
 
   if (normalizedSearch.length < 2) {
     return [];
   }
 
-  const pokemonNames = await loadPokemonNames();
+  const pokemonNames =
+    await loadPokemonNames();
 
-  const startsWithSearch = pokemonNames.filter(
-    (name) => name.startsWith(normalizedSearch),
-  );
+  const startsWithSearch =
+    pokemonNames.filter((name) =>
+      name.startsWith(normalizedSearch),
+    );
 
-  const containsSearch = pokemonNames.filter(
-    (name) =>
-      !name.startsWith(normalizedSearch) &&
-      name.includes(normalizedSearch),
-  );
+  const containsSearch =
+    pokemonNames.filter(
+      (name) =>
+        !name.startsWith(normalizedSearch) &&
+        name.includes(normalizedSearch),
+    );
 
   return [
     ...startsWithSearch,
