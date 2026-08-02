@@ -1,7 +1,17 @@
-import Home from "./pages/Home/Home";
+import { Route, Routes } from "react-router-dom";
+
+import Home from "./pages/home/Home";
+import Team from "./pages/Team/team";
+import NotFound from "./pages/NotFound/NotFound";
 
 function App() {
-  return <Home />;
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/time" element={<Team />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
 }
 
 export default App;

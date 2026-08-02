@@ -1,31 +1,58 @@
+import { NavLink } from "react-router-dom";
+
+import { useTeam } from "../../contexts/TeamContext";
+
 import "./Navbar.css";
 
 function Navbar() {
+  const { team } = useTeam();
+
   return (
     <header className="navbar">
-      <div className="navbar__brand">
-        <div className="navbar__pokeball">
-          <span />
-        </div>
+      <div className="navbar__container">
+        <NavLink
+          to="/"
+          className="navbar__brand"
+          aria-label="Ir para a Pokédex"
+        >
+          <div className="navbar__pokeball">
+            <span />
+          </div>
 
-        <h1>
-          Poké<span>Hub</span>
-        </h1>
+          <h1>
+            Poké<span>Hub</span>
+          </h1>
+        </NavLink>
+
+        <nav className="navbar__links">
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              `navbar__link ${
+                isActive ? "navbar__link--active" : ""
+              }`
+            }
+          >
+            Pokédex
+          </NavLink>
+
+          <NavLink
+            to="/time"
+            className={({ isActive }) =>
+              `navbar__link ${
+                isActive ? "navbar__link--active" : ""
+              }`
+            }
+          >
+            <span>Meu Time</span>
+
+            <strong>
+              {team.length}/6
+            </strong>
+          </NavLink>
+        </nav>
       </div>
-
-      <nav className="navbar__links">
-        <a href="#pokedex" className="navbar__link navbar__link--active">
-          Pokédex
-        </a>
-
-        <a href="#explorar" className="navbar__link">
-          Explorar
-        </a>
-
-        <a href="#sobre" className="navbar__link">
-          Sobre
-        </a>
-      </nav>
     </header>
   );
 }

@@ -6,49 +6,68 @@ interface PokemonStatsProps {
   stats: PokemonStat[];
 }
 
-const statLabels: Record<string, string> = {
+const statNames: Record<string, string> = {
   hp: "HP",
   attack: "Ataque",
   defense: "Defesa",
-  "special-attack": "Ataque especial",
-  "special-defense": "Defesa especial",
-  speed: "Velocidade"
+  "special-attack": "Ataque Especial",
+  "special-defense": "Defesa Especial",
+  speed: "Velocidade",
 };
 
 function PokemonStats({ stats }: PokemonStatsProps) {
+  const totalStats = stats.reduce(
+    (total, stat) => total + stat.value,
+    0,
+  );
+
+  function calculatePercentage(value: number) {
+    return Math.min((value / 180) * 100, 100);
+  }
+
   return (
     <section className="pokemon-stats">
       <div className="pokemon-stats__header">
         <div>
           <span>Desempenho</span>
           <h2>Estatísticas base</h2>
+
+          <p>
+            Visão geral dos atributos naturais deste Pokémon.
+          </p>
         </div>
 
-        <p>
-          Valores oficiais retornados pela PokéAPI.
-        </p>
+        <div className="pokemon-stats__total">
+          <span>Total</span>
+          <strong>{totalStats}</strong>
+        </div>
       </div>
 
       <div className="pokemon-stats__list">
-        {stats.map((stat) => {
-          const percentage = Math.min((stat.value / 180) * 100, 100);
+        {stats.map((stat) => (
+          <div
+            className="pokemon-stats__item"
+            key={stat.name}
+          >
+            <div className="pokemon-stats__item-header">
+              <span>
+                {statNames[stat.name] ?? stat.name}
+              </span>
 
-          return (
-            <div className="pokemon-stats__item" key={stat.name}>
-              <div className="pokemon-stats__info">
-                <span>{statLabels[stat.name] ?? stat.name}</span>
-                <strong>{stat.value}</strong>
-              </div>
-
-              <div className="pokemon-stats__bar">
-                <div
-                  className="pokemon-stats__progress"
-                  style={{ width: `${percentage}%` }}
-                />
-              </div>
+              <strong>{stat.value}</strong>
             </div>
-          );
-        })}
+
+            <div className="pokemon-stats__bar">
+              <div
+                style={{
+                  width: `${calculatePercentage(
+                    stat.value,
+                  )}%`,
+                }}
+              />
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

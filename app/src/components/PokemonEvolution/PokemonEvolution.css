@@ -1,145 +1,257 @@
 .pokemon-evolution {
   width: 100%;
-  padding: 32px;
+  padding: 34px;
 
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 22px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(239, 35, 60, 0.06),
+      transparent 30%
+    ),
+    var(--color-surface);
 
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+
+  box-shadow: var(--shadow-md);
 }
 
-.pokemon-evolution__header span {
-  color: #dc2626;
-  font-size: 13px;
-  font-weight: 700;
+.pokemon-evolution__header > span {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
 .pokemon-evolution__header h2 {
   margin-top: 5px;
 
-  color: #18181b;
-  font-size: 28px;
+  color: var(--color-text);
+  font-size: 30px;
+  font-weight: 850;
+  letter-spacing: -0.035em;
 }
 
-.pokemon-evolution__list {
+.pokemon-evolution__header p {
+  margin-top: 9px;
+
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.pokemon-evolution__track {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
 
-  width: 100%;
-  margin-top: 28px;
+  gap: 18px;
 
-  overflow-x: auto;
-  padding: 10px 4px 18px;
+  margin-top: 32px;
 }
 
 .pokemon-evolution__step {
   display: flex;
   align-items: center;
-  gap: 24px;
-
-  flex-shrink: 0;
+  gap: 18px;
 }
 
 .pokemon-evolution__card {
   position: relative;
 
-  width: 210px;
-  min-width: 210px;
-  min-height: 250px;
-  padding: 22px;
-
   display: flex;
   align-items: center;
-  justify-content: center;
   flex-direction: column;
 
-  color: inherit;
+  width: 230px;
+  min-width: 0;
+  padding: 24px 20px 20px;
+
   text-align: center;
 
   background:
-    radial-gradient(
-      circle at center,
-      rgba(220, 38, 38, 0.09),
-      transparent 60%
-    ),
-    #fafafa;
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fafafa
+    );
 
-  border: 1px solid #ececec;
-  border-radius: 18px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
 
-  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+
+  overflow: hidden;
 
   transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    transform var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.pokemon-evolution__card::before {
+  position: absolute;
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(239, 35, 60, 0.1),
+      transparent 42%
+    );
+
+  content: "";
+  pointer-events: none;
 }
 
 .pokemon-evolution__card:hover {
-  transform: translateY(-4px);
-  border-color: #fecaca;
+  transform: translateY(-5px);
 
-  box-shadow: 0 12px 28px rgba(220, 38, 38, 0.1);
-}
+  border-color: #fecdd3;
 
-.pokemon-evolution__card:focus-visible {
-  outline: 3px solid rgba(220, 38, 38, 0.25);
-  outline-offset: 3px;
+  box-shadow:
+    0 16px 34px rgba(24, 24, 27, 0.1);
 }
 
 .pokemon-evolution__number {
   position: absolute;
+  z-index: 2;
   top: 14px;
   left: 14px;
 
-  color: #dc2626;
-  font-size: 12px;
-  font-weight: 700;
+  padding: 6px 9px;
+
+  color: var(--color-primary-dark);
+  background-color: var(--color-primary-soft);
+
+  border: 1px solid #fecdd3;
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 850;
 }
 
-.pokemon-evolution__card img {
+.pokemon-evolution__image {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   width: 150px;
   height: 150px;
-  margin: 0 auto;
+  margin-top: 8px;
+
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+}
+
+.pokemon-evolution__image img {
+  width: 90%;
+  height: 90%;
 
   object-fit: contain;
+
+  filter: drop-shadow(
+    0 18px 16px rgba(24, 24, 27, 0.12)
+  );
+
+  transition: transform var(--transition-normal);
+}
+
+.pokemon-evolution__card:hover
+  .pokemon-evolution__image
+  img {
+  transform: translateY(-4px) scale(1.04);
 }
 
 .pokemon-evolution__card h3 {
-  margin-top: 10px;
+  position: relative;
+  z-index: 1;
 
-  color: #27272a;
-  font-size: 18px;
+  margin-top: 14px;
+
+  color: var(--color-text);
+  font-size: 20px;
+  font-weight: 850;
   text-transform: capitalize;
 }
 
-.pokemon-evolution__card small {
-  display: block;
-  margin-top: 6px;
+.pokemon-evolution__card button {
+  position: relative;
+  z-index: 1;
 
-  color: #dc2626;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  width: 100%;
+  min-height: 42px;
+  margin-top: 16px;
+  padding: 0 14px;
+
+  color: var(--color-primary-dark);
+  background-color: var(--color-primary-soft);
+
+  border: 1px solid #fecdd3;
+  border-radius: var(--radius-sm);
+
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 850;
+  cursor: pointer;
+
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
-.pokemon-evolution__arrow {
-  flex-shrink: 0;
-
-  color: #dc2626;
-  font-size: 30px;
-  font-weight: 700;
+.pokemon-evolution__card button:hover {
+  background-color: #ffe4e8;
+  transform: translateY(-1px);
 }
 
-@media (max-width: 760px) {
-  .pokemon-evolution {
-    padding: 24px;
+.pokemon-evolution__connector {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: var(--color-primary);
+}
+
+.pokemon-evolution__connector span {
+  width: 18px;
+  height: 2px;
+
+  background-color: #fecdd3;
+  border-radius: 999px;
+}
+
+@media (max-width: 1050px) {
+  .pokemon-evolution__track {
+    align-items: stretch;
+    flex-direction: column;
   }
 
-  .pokemon-evolution__list {
-    justify-content: flex-start;
+  .pokemon-evolution__step {
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .pokemon-evolution__connector {
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .pokemon-evolution {
+    padding: 26px 22px;
+  }
+
+  .pokemon-evolution__card {
+    width: 100%;
+    max-width: 320px;
   }
 }

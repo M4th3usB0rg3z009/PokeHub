@@ -37,4 +37,16 @@ export interface PokemonEvolution {
 
 export interface PokemonMove {
   name: string;
+  type: string;
+  power: number | null;
+  accuracy: number | null;
+  damageClass: "physical" | "special" | "status";
+  learnDetails: PokemonMoveLearnDetail[];
+}
+
+export interface PokemonMoveLearnDetail {
+  method: string;
+  level: number;
+  versionGroup: string;
+  generation: string;
 }

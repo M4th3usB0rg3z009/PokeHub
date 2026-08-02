@@ -1,7 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 
-import { askAssistant } from "../controllers/assistant.controller.js";
+import { askAssistant, createPokemonBuild, analyzeTeam, } from "../controllers/assistant.controller.js";
 
 const assistantRoutes = Router();
 
@@ -14,6 +14,18 @@ const assistantLimiter = rateLimit({
     message: "Muitas perguntas enviadas. Aguarde um momento."
   }
 });
+
+assistantRoutes.post(
+  "/build",
+  assistantLimiter,
+  createPokemonBuild,
+);
+
+assistantRoutes.post(
+  "/team-analysis",
+  assistantLimiter,
+  analyzeTeam,
+);
 
 assistantRoutes.post("/", assistantLimiter, askAssistant);
 

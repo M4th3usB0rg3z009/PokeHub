@@ -1,58 +1,78 @@
-import type {
-  PokemonEvolution as PokemonEvolutionType
-} from "../../types/pokemon";
+import {
+  ArrowRight,
+  ExternalLink,
+} from "lucide-react";
 
 import "./PokemonEvolution.css";
 
+interface PokemonEvolutionItem {
+  id: number;
+  name: string;
+  image: string;
+}
+
 interface PokemonEvolutionProps {
-  evolutions: PokemonEvolutionType[];
+  evolutions: PokemonEvolutionItem[];
   onSelectPokemon: (name: string) => void;
 }
 
 function PokemonEvolution({
   evolutions,
-  onSelectPokemon
+  onSelectPokemon,
 }: PokemonEvolutionProps) {
   return (
     <section className="pokemon-evolution">
       <div className="pokemon-evolution__header">
         <span>Linha evolutiva</span>
+
         <h2>Evoluções</h2>
+
+        <p>
+          Acompanhe as diferentes formas desta espécie
+          ao longo da evolução.
+        </p>
       </div>
 
-      <div className="pokemon-evolution__list">
+      <div className="pokemon-evolution__track">
         {evolutions.map((pokemon, index) => (
           <div
-            className="pokemon-evolution__step"
             key={pokemon.id}
+            className="pokemon-evolution__step"
           >
-            <button
-              type="button"
-              className="pokemon-evolution__card"
-              onClick={() => onSelectPokemon(pokemon.name)}
-              aria-label={`Pesquisar ${pokemon.name}`}
-            >
+            <article className="pokemon-evolution__card">
               <span className="pokemon-evolution__number">
                 #{String(pokemon.id).padStart(3, "0")}
               </span>
 
-              <img
-                src={pokemon.image}
-                alt={`Imagem do Pokémon ${pokemon.name}`}
-              />
+              <div className="pokemon-evolution__image">
+                <img
+                  src={pokemon.image}
+                  alt={`Imagem do Pokémon ${pokemon.name}`}
+                />
+              </div>
 
               <h3>{pokemon.name}</h3>
 
-              <small>Ver informações</small>
-            </button>
+              <button
+                type="button"
+                onClick={() =>
+                  onSelectPokemon(pokemon.name)
+                }
+              >
+                Ver informações
+                <ExternalLink size={15} />
+              </button>
+            </article>
 
             {index < evolutions.length - 1 && (
-              <span
-                className="pokemon-evolution__arrow"
+              <div
+                className="pokemon-evolution__connector"
                 aria-hidden="true"
               >
-                →
-              </span>
+                <span />
+                <ArrowRight size={22} />
+                <span />
+              </div>
             )}
           </div>
         ))}
