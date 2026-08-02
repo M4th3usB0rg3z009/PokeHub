@@ -13,8 +13,16 @@ interface AnalyzeTeamResponse {
   analysis: TeamAnalysis;
 }
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
+if (!apiUrl) {
+  throw new Error(
+    "A variável VITE_API_URL não foi configurada.",
+  );
+}
+
 const api = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: apiUrl,
   timeout: 60000,
 });
 
